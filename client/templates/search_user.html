@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Find users{% endblock %}
+        
+{% block additional_sources %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/search_user.css')}}"/>
+    <script src="{{ url_for('static', filename='js/search_user.js')}}" defer></script>
+{% endblock %}
+
+{% block content %}
+
+    <div class="blurrable content d-flex flex-column align-items-center justify-content-center">
+        <section class="form-group" id="searchSection">
+            <h3 align="center">Search users</h3>
+    
+            <div class="form-group d-flex search-area">
+                <input type="text" class="form-control" name="queried_username" id="queriedUsername" placeholder="Enter username">
+                <button class="btn btn-outline-primary" id="queryUsersBtn" onclick="findUsers()">Search</button>
+            </div>
+        </section>
+
+        <ul class="list-group d-flex justify-content-between" id="queriedUsers"></ul> 
+    </div>
+
+    <div id="confirmChat" class="popup"></div>
+
+{% endblock%}

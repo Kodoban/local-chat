@@ -1,0 +1,102 @@
+.content > * {
+    width: 70%; 
+    max-width: 70%;
+}
+
+.blurrable.active {
+    filter: blur(4px);
+    pointer-events: none;
+    user-select: none;
+}
+
+h3 {
+    margin-top: 25px;
+    flex-basis: 50%;
+}
+
+.search-area {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+/* 
+#queriedUsername {
+    Give set spacing to username
+} */
+
+.list-group {
+    margin-top: 20px;
+}
+
+.list-group-item > * {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.popup {
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 700px;
+    padding-left: 40px;
+    padding-right: 40px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.4);
+    visibility: hidden;
+    opacity: 0;
+    transition: 300ms;
+    border-radius: 25px;
+    background-color: inherit;
+}
+
+.popup.active {
+    visibility: visible;
+    top: 50%;
+    opacity: 1;
+    transition: 300ms;
+}
+
+form > * {
+    margin-bottom: 1rem;
+}
+
+
+
+/* .modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+  
+  .modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border-radius: 4px;
+    max-width: 300px;
+    height: 450px;
+  }
+  
+  .close-button,
+  .redirect-button {
+    color: #000000;
+    float: right;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  
+  .close-button:hover,
+  .close-button:focus {
+    color: #000000;
+    text-decoration: none;
+    cursor: pointer;
+  } */

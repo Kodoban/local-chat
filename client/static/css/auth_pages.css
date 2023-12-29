@@ -1,0 +1,17 @@
+.content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+h3 {
+    margin-top: 25px;
+}
+
+label {
+    margin-top: 15px;
+}
+
+form {
+    flex-basis: 50%;
+}

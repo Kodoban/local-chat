@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}{{chat.name}}{% endblock %}
+        
+{% block additional_sources %}
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/search_user.css')}}"/>
+    <script src="{{ url_for('static', filename='js/search_user.js')}}" defer></script> -->
+{% endblock %}
+
+{% block content %}
+
+    <h3>Chat ID: {{chat.id}}</h3>
+
+    {% for message in chat.messages %}
+        <p>{{message.sender.name}} said: {{message.content}}</p>
+    {% endfor %}
+
+{% endblock%}

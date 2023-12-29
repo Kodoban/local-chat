@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Homepage{% endblock %}
+
+{% block content %}
+
+<h2>Welcome {{user.name}}</h2>
+
+<ul id="list-chats">
+    {% for chat in user.chats %}
+        <li class="list-group-item">
+            {{chat.name}}
+        </li>
+    {% endfor %}
+</ul>
+
+{% endblock%}
