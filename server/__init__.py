@@ -1,13 +1,17 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from os import path
 from flask_login import LoginManager
+from sqlalchemy import select
+from os import path
 
 db = SQLAlchemy()
 DB_NAME = "database.db"
+CLIENT_DIR_PATH = path.join(path.dirname(path.abspath(__file__)), '..', 'client')
+TEMPLATES_DIR_PATH = path.join(CLIENT_DIR_PATH, "templates")
+STATIC_DIR_PATH = path.join(CLIENT_DIR_PATH, 'static')
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder=TEMPLATES_DIR_PATH, static_folder=STATIC_DIR_PATH)
     app.config['SECRET_KEY'] = "change_later"
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
 
@@ -30,6 +34,6 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(id):
-        return User.query.get(int(id))
+        return db.session.scalar(select(User).where(User.id==id))
 
     return app
