@@ -42,18 +42,19 @@ def create_chat():
         return render_template("search_user.html", user=current_user)
     elif request.method == 'POST':
         other_user_id = request.form.get("user_id")
-        other_user_name = request.form.get("user_name")
+        other_user = db.session.scalar(select(User).where(User.id==other_user_id))
         first_message = request.form.get("initial_message")
 
-        if len(other_user_id) < 1 or len(first_message) < 1:
+        if not other_user or len(first_message) < 1:
             pass
 
-        # TODO: Check if there is a way to add the chat id to the message without committing first?
-        new_chat = Chat(name = f"Chat of {current_user.name} and {other_user_name}")
+        new_chat = Chat(name = f"Chat of {current_user.name} and {other_user.name}")
         db.session.add(new_chat)
-        db.session.commit()
 
-        new_message = Message(chat_id = new_chat.id, sender_id = current_user.get_id(), content = first_message)
+        current_user.chats.append(new_chat)
+        other_user.chats.append(new_chat)
+
+        new_message = Message(chat_id = new_chat.id, sender_id = current_user.id, content = first_message)
         db.session.add(new_message)
         db.session.commit()
 
