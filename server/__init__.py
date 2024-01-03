@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from flask_socketio import join_room, leave_room, send, SocketIO
+from flask_socketio import SocketIO
 from sqlalchemy import select
 from os import path
 
@@ -10,13 +10,12 @@ DB_NAME = "database.db"
 CLIENT_DIR_PATH = path.join(path.dirname(path.abspath(__file__)), '..', 'client')
 TEMPLATES_DIR_PATH = path.join(CLIENT_DIR_PATH, "templates")
 STATIC_DIR_PATH = path.join(CLIENT_DIR_PATH, 'static')
+app = Flask(__name__, template_folder=TEMPLATES_DIR_PATH, static_folder=STATIC_DIR_PATH)
+app.config['SECRET_KEY'] = "change_later"
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
+socketio = SocketIO(app)
 
 def create_app():
-    app = Flask(__name__, template_folder=TEMPLATES_DIR_PATH, static_folder=STATIC_DIR_PATH)
-    app.config['SECRET_KEY'] = "change_later"
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
-    socketio = SocketIO(app)
-
     db.init_app(app)
 
     from .views import views

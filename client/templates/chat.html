@@ -3,16 +3,27 @@
 {% block title %}{{chat.name}}{% endblock %}
         
 {% block additional_sources %}
-    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/search_user.css')}}"/>
-    <script src="{{ url_for('static', filename='js/search_user.js')}}" defer></script> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css')}}"/>
+    <script src="{{ url_for('static', filename='js/chat.js')}}" defer></script>
 {% endblock %}
 
 {% block content %}
 
-    <h3>Chat ID: {{chat.id}}</h3>
+    <div class="conversation-box">
+        <div class="messages" id="messages">
+            {% for message in chat.messages %}
+                {% if message.sender.id == user.id %}
+                    <p align="right">{{message.content}}</p>
+                {% else %}
+                    <p>{{message.content}}</p>
+                {% endif %}
+            {% endfor %}
+        </div>
 
-    {% for message in chat.messages %}
-        <p>{{message.sender.name}} said: {{message.content}}</p>
-    {% endfor %}
+        <div id="messageInput">
+            <input type="text" rows="2" placeholder="Send a message" name="message" id="message">
+            <button type="button" name="send" class="btn btn-primary" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
 
 {% endblock%}
