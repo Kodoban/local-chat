@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, jsonify, redirect, url_for, session
 from flask_login import login_required, current_user
-from sqlalchemy import func, select
-from flask_socketio import join_room, leave_room, send, emit
+from sqlalchemy import select
+from flask_socketio import join_room, leave_room, emit
 from .models import User, Chat, Message
 from . import db, socketio
 import json 
@@ -9,8 +9,8 @@ import json
 views = Blueprint('views', __name__)
 chatrooms = {}
 
+# Partially implemented
 # Page after login, shows all available chats (if any), page to add chats, etc
-# Should any pages redirect here while logged in?
 @views.route('/', methods=['GET', 'POST'])
 @login_required
 def home():
@@ -36,7 +36,7 @@ def profile():
         
         return render_template("profile.html", user=current_user)
 
-# Currently implementing
+# Mostly implemented
 @views.route('/create-chat', methods=['GET','POST'])
 @login_required
 def create_chat():
@@ -76,8 +76,7 @@ def add_participants(chat_id):
             db.session.add(users)
             # db.session.commit() # Maybe don't commit until the first message is sent? If user decides to not send a message, do not add to DB
             
-            # TODO: Send a message that a user has joined a group chat for the first time (same for leaving a group chat) 
-            # send({"name": name, "message": " has connected to the room"}, to=chatroom)
+            # TODO: Emit a message that a user has joined a group chat for the first time (same for leaving a group chat) 
 
 
 # Currently implementing
@@ -95,23 +94,6 @@ def chat(chat_id):
         session["chat"] = chat.id
 
         return render_template("chat.html", user=current_user, chat=chat)
-
-    return render_template("home.html", user=current_user)
-
-# Not yet implemented
-@views.route('/chats/<int:chat_id>/add_message', methods=['POST'])
-@login_required
-def add_message(chat_id):
-    if request.method == 'POST':
-        message = request.form.get("message")
-
-        if len(message) < 1:
-            pass
-        else:
-            new_message = Message(data=message)
-            db.session.add(new_message)
-            db.session.commit()
-            # renew page content with new message
 
     return render_template("home.html", user=current_user)
 
@@ -140,18 +122,10 @@ def search_user():
 
     return render_template("search_user.html", user=current_user)
 
+# Implemented
 @socketio.on('message')
 @login_required
 def message(data):
-
-    # TODO: Utilize rooms
-    # A user is added to a room with id=<id> once they go to /chats/<id>. Once they leave the room, remove them from the dictionary
-    # socketio.on("connect") etc will probably trigger every time, add user to a room once they connect to /chats/id
-    # Problem is how to remove them from the room when they leave/close the tab/window
-    # https://flask-socketio.readthedocs.io/en/latest/getting_started.html#connection-events
-    # https://stackoverflow.com/questions/147636/best-way-to-detect-when-a-user-leaves-a-web-page
-    # https://testdriven.io/blog/flask-sessions/
-    # use emit('message',message, broadcast=True, to=room) or send(message, to=room)
 
     # TODO: In case the server reboots and not all users have disconnected from a chat, the chatrooms dict does not track that chat
     chat = session.get("chat")
@@ -163,8 +137,9 @@ def message(data):
         "content": content
     } 
 
-    # emit('message', message, to=chatusers[0])
-    emit('message', message, to=chat)
+    # Send message to everyone in the chat (the sender has it printed locally at the same time )
+    # TODO: Check if it's better to verify that the message was inserted to the DB successfully first?
+    emit('message', message, to=chat, include_self=False)
     
     # Commit message to chat
     new_message = Message(chat_id = chat, sender_id = current_user.id, content = content)
@@ -173,6 +148,7 @@ def message(data):
 
     print(f"{sender} said: {content}")
 
+# Implemented
 @socketio.on("connect")
 def connect(auth):
     
@@ -188,6 +164,8 @@ def connect(auth):
     chatrooms[chatroom]["online_users"].append(current_user)
     print(f"{current_user.name} has connected to chatroom with ID {chatroom}")
 
+
+# Implemented
 @socketio.on("disconnect")
 def disconnect():
 
