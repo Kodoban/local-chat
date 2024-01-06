@@ -9,7 +9,7 @@
 <ul id="list-chats">
     {% for chat in user.chats %}
         <li class="list-group-item">
-            {{chat.name}}
+            <a href="/chats/{{chat.id}}">{{chat.name}}</a>
         </li>
     {% endfor %}
 </ul>
