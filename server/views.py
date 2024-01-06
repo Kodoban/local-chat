@@ -2,9 +2,11 @@ from flask import Blueprint, render_template, request, flash, jsonify, redirect,
 from flask_login import login_required, current_user
 from sqlalchemy import select
 from flask_socketio import join_room, leave_room, emit
+from datetime import datetime
 from .models import User, Chat, Message
 from . import db, socketio
-import json 
+import json
+from sys import version_info as python_version
 
 views = Blueprint('views', __name__)
 chatrooms = {}
@@ -46,6 +48,7 @@ def create_chat():
         other_user_id = request.form.get("user_id")
         other_user = db.session.scalar(select(User).where(User.id==other_user_id))
         first_message = request.form.get("initial_message")
+        sendTime = request.form.get("submit_time")
 
         if not other_user or len(first_message) < 1:
             pass
@@ -56,7 +59,12 @@ def create_chat():
         current_user.chats.append(new_chat)
         other_user.chats.append(new_chat)
 
-        new_message = Message(chat_id = new_chat.id, sender_id = current_user.id, content = first_message)
+        new_message = Message(
+            chat_id=new_chat.id, 
+            sender_id = current_user.id, 
+            content = first_message,
+            timestamp=datetime.fromisoformat(sendTime) if python_version>=(3, 11) else datetime.fromisoformat(sendTime.replace('Z', '+00:00'))
+        )
         db.session.add(new_message)
         db.session.commit()
 
@@ -130,11 +138,13 @@ def message(data):
     # TODO: In case the server reboots and not all users have disconnected from a chat, the chatrooms dict does not track that chat
     chat = session.get("chat")
     sender = current_user.name
-    content = data["data"]
+    content = data["content"]
+    sendTime = data["send_time"]
 
     message = {
         "name": sender,
-        "content": content
+        "content": content,
+        "send_time": sendTime
     } 
 
     # Send message to everyone in the chat (the sender has it printed locally at the same time )
@@ -142,11 +152,20 @@ def message(data):
     emit('message', message, to=chat, include_self=False)
     
     # Commit message to chat
-    new_message = Message(chat_id = chat, sender_id = current_user.id, content = content)
+
+    # datetime.fromisoformat() cannot handle the trailing "Z" in Python 3.10 and older 
+    # Source: https://note.nkmk.me/en/python-datetime-isoformat-fromisoformat/#python-311-and-later
+    # TODO: Check if there is a better way to do this, preferably without importing new modules (e.g. dateutil)
+    new_message = Message(
+        chat_id=chat,
+        sender_id=current_user.id,
+        content=content,
+        timestamp=datetime.fromisoformat(sendTime) if python_version>=(3, 11) else datetime.fromisoformat(sendTime.replace('Z', '+00:00'))
+    )
     db.session.add(new_message)
     db.session.commit()
 
-    print(f"{sender} said: {content}")
+    print(f"Chat {chat} - {sender} said: {content} ({sendTime})")
 
 # Implemented
 @socketio.on("connect")

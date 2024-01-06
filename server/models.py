@@ -1,5 +1,4 @@
 from flask_login import UserMixin
-from sqlalchemy.sql import func
 
 from . import db
 
@@ -21,7 +20,7 @@ class Message(db.Model):
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     # receiver_id ??? is this needed? Eg user or group chat
     content = db.Column(db.String(MAX_CONTENT_LEN))
-    timestamp = db.Column(db.DateTime(timezone=True), default=func.now()) # Check for different timezones?
+    timestamp = db.Column(db.DateTime(timezone=True))
     is_sent = db.Column(db.Boolean, default=True, nullable=False)
     is_received = db.Column(db.Boolean, default=False, nullable=False)
     is_read = db.Column(db.Boolean, default=False, nullable=False)
