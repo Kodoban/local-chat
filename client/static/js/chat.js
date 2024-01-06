@@ -5,29 +5,18 @@ const messages = document.getElementById("messages");
 const anchor = document.getElementById("anchor");
 var socketio = io();
 
-socketio.on('message', function(data) {
-    createMessage(data.name, data.content);
+document.addEventListener("DOMContentLoaded", function(event) {
+    let dates = document.getElementsByClassName("metadata-send-time");
+    for (let sendTime of dates) {
+        sendTime.innerHTML = (new Date(sendTime.innerText)).toLocaleString();
+    }
 });
 
-function createMessage(name, msg) {
+socketio.on('message', function(data) {
+    createMessage(data.name, data.content, new Date(data.send_time));
+});
 
-    /* 
-        https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleTimeString
-
-        For Date TO server: 
-        1. Get current local time (message generated time)
-            sendTime = new Date() -> Date Object: Thu Jan 04 2024 13:34:36 GMT+0200 (Eastern European Standard Time)
-        2. Get local time from var
-            sendTime.toLocaleString() (Check if it's possible to convert to 24-hour clock?)
-            or e.g.
-            sendTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }); -> 13:34
-        3. Convert to ISO for DB and send to server
-            sendTime.toISOString() -> "2024-01-04T11:34:36.463Z"
-        
-        For Date FROM server to local time: See 2 and 3
-        
-    */
-
+function createMessage(name, msg, sendTime) {
 
     let messageItem = Object.assign(document.createElement("div"), {
         className: "message-item"
@@ -39,7 +28,7 @@ function createMessage(name, msg) {
 
     let messageSendTime = Object.assign(document.createElement("span"), {
         className: "metadata-send-time",
-        innerHTML: `${new Date().toLocaleString()}` //TODO: update with above
+        innerHTML: sendTime.toLocaleString()
     });
 
     let messageContent = document.createElement("span");
@@ -47,13 +36,12 @@ function createMessage(name, msg) {
         messageItem.classList.toggle("own-message");
         messageSendTime.classList.toggle("own-message-text-align");
         messageContent.classList.toggle("own-message-text-align");
-        messageContent.innerHTML = `${msg}`;
+        messageContent.innerHTML = msg;
     } 
     else {
         messageContent.innerHTML = `<strong>${name}: </strong>${msg}`;
     }
     
-
     messageContainer.appendChild(messageSendTime);
     messageContainer.appendChild(messageContent);
     messageItem.appendChild(messageContainer);
@@ -66,11 +54,12 @@ function createMessage(name, msg) {
 }
 
 function sendMessage() {
+    let sendTime = new Date();
     let message = document.getElementById("message");
     if (message.value == "") return;
-    createMessage("", message.value);
+    createMessage("", message.value, sendTime);
     scrollToNewestMessage();
-    socketio.emit('message', {data: message.value});
+    socketio.emit('message', {content: message.value, send_time: sendTime});
     message.value="";
 }
 
