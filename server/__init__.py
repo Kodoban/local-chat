@@ -4,6 +4,7 @@ from flask_login import LoginManager
 from flask_socketio import SocketIO
 from sqlalchemy import select
 from os import path
+from datetime import datetime
 
 db = SQLAlchemy()
 DB_NAME = "database.db"
@@ -36,5 +37,9 @@ def create_app():
     @login_manager.user_loader
     def load_user(id):
         return db.session.scalar(select(User).where(User.id==id))
+
+    @app.template_filter()
+    def convert_date_to_ISO8601(date):
+        return datetime.isoformat(date)
 
     return socketio, app

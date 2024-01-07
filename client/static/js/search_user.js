@@ -132,6 +132,12 @@ function raiseConfirmChatPopup(user) {
         hidden: "true"
     });
 
+    let formSubmitTime = Object.assign(document.createElement('input'), {
+        id: "formSubmitTime",
+        name: "submit_time",
+        hidden: "true"
+    });
+
     let initialMessageInput = Object.assign(document.createElement('textarea'), {
         id: "initialMessage",
         name: "initial_message",
@@ -144,8 +150,23 @@ function raiseConfirmChatPopup(user) {
         id: 'confirmNewChatButton',
         type: "submit",
         className: "btn btn-primary",
-        onclick: 'checkMessageNotEmpty()',
         innerHTML: "Send"
+    });
+
+    // TODO: Check if the submit event can be added to a function in Object.assign. Otherwise use inline function in Object.assign?
+    confirmNewChatButton.addEventListener('click', function(event) {
+
+        event.preventDefault();
+
+        let message = document.getElementById("initialMessage");
+        if (!($.trim(message.value) === "")) {
+            document.getElementById("formSubmitTime").value = (new Date()).toISOString();
+            event.target.form.submit();
+        }
+        else {
+            message.value = "";
+            console.log("Please enter a message");
+        }
     });
 
     // Button to cancel new chat
@@ -156,6 +177,7 @@ function raiseConfirmChatPopup(user) {
         innerHTML: "Cancel"
     });
 
+    // TODO: Move to function and reference in Object.assign
     cancelNewChatButton.addEventListener('click', function () {
 
         // Remove all contents from div containing the popup
@@ -181,6 +203,7 @@ function raiseConfirmChatPopup(user) {
 
     form.appendChild(userIdInput);
     form.appendChild(userNameInput);
+    form.appendChild(formSubmitTime)
     form.appendChild(initialMessageInput);
     form.appendChild(confirmNewChatButton);
     form.appendChild(cancelNewChatButton);
@@ -199,6 +222,7 @@ function checkMessageNotEmpty() {
 
         let message = document.getElementById("initialMessage");
         if (!($.trim(message.value) === "")) {
+            document.getElementById("formSubmitTime").value = new Date();
             event.target.form.submit();
         }
         else {
@@ -207,32 +231,3 @@ function checkMessageNotEmpty() {
         }
     });
 }
-
-/* const messages = document.getElementById("messages");
-
-const createMessage = (name, msg) => {
-    const content = 
-    `
-        <div class="text">
-            <span>
-                <strong>${name}</strong>${msg}
-            </span>
-            <span class="muted">
-                ${new Date().toLocaleString()}
-            </span>
-        </div>
-    `
-
-    messages.innerHTML += content;
-}
-
-socketio.on("message", (data) => {
-    createMessage(data.name, data.message);
-});
-
-const sendMessage = () => {
-    const message = document.getElementById("message");
-    if (message.value == "") return;
-    socketio.emit("message", {data: message.value})
-    message.value=""; 
-} */

@@ -19,7 +19,7 @@
                         <div class="message-item own-message">
                             <div class="message-container">
                                 <span class="metadata-send-time own-message-text-align">
-                                    {{message.timestamp}}
+                                    {{message.timestamp | convert_date_to_ISO8601}}
                                 </span>
                                 <span class="own-message-text-align">
                                     {{message.content}}
