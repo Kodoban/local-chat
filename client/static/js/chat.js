@@ -5,6 +5,7 @@ const messages = document.getElementById("messages");
 const anchor = document.getElementById("anchor");
 var socketio = io();
 
+// TODO: Hide messages/times until the timestamps are replaced?
 document.addEventListener("DOMContentLoaded", function(event) {
     let dates = document.getElementsByClassName("metadata-send-time");
     for (let sendTime of dates) {
@@ -95,7 +96,6 @@ function addNewMessageRibbon() {
 
     newMessageRibbon.appendChild(newMessageRibbonText);
     newMessageRibbon.appendChild(newMessageRibbonButton);
-    // document.insertBefore(newMessageRibbon, messages);
     conversationBox.insertBefore(newMessageRibbon, messages);
 }
 

@@ -18,7 +18,6 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True) # Use autoincrement for now, fix later on with uuid or composite key (id, chat_id)
     chat_id = db.Column(db.Integer, db.ForeignKey('chat.id'))
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    # receiver_id ??? is this needed? Eg user or group chat
     content = db.Column(db.String(MAX_CONTENT_LEN))
     timestamp = db.Column(db.DateTime(timezone=True))
     is_sent = db.Column(db.Boolean, default=True, nullable=False)
@@ -35,7 +34,6 @@ class Chat(db.Model):
     id = db.Column(db.Integer, primary_key=True) # Use autoincrement for now, fix later on with uuid
     name = db.Column(db.String(MAX_USERNAME_LEN))
     # chat_pic
-    # users = db.Column(db.Integer, db.ForeignKey('user.id'))
     # is_group = db.Column(db.Boolean, default=True, nullable=False) # Can this be inferred some other way?
 
     # Relationships
