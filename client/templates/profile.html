@@ -14,7 +14,7 @@
     <h4 align="center">Profile Info for {{other_user.name}}</h4>
 
     <div>
-        <div class="round-image-container">
+        <div class="profile-picture-container">
             <img id="profilePic" src="{{ url_for('views.profile_picture', filename=other_user.profile_picture) }}" alt="Profile Picture">
         </div>
         <ul class="list-group list-group-flush">
@@ -27,7 +27,7 @@
     <h4 align="center"> Your Profile Info</h4>
 
     <div>
-        <div class="round-image-container">
+        <div class="profile-picture-container">
             <img id="profilePic" src="{{ url_for('views.profile_picture', filename=current_user.profile_picture) }}" alt="Profile Picture">
         </div>
         <form class="mb-3" method="post" enctype="multipart/form-data">
