@@ -5,6 +5,7 @@ from . import db
 MAX_USERNAME_LEN = 30
 MAX_CONTENT_LEN = 1000
 MAX_PASSWORD_LEN = 128
+MAX_PROFILE_PICTURE_PATH_LEN = 255
 
 # https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html
 
@@ -45,7 +46,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True) # Use autoincrement for now, fix later on with uuid
     name = db.Column(db.String(MAX_USERNAME_LEN), unique=True, nullable=False)
     password = db.Column(db.String(MAX_PASSWORD_LEN), nullable=False)
-    # profile_pic = 
+    profile_picture = db.Column(db.String(MAX_PROFILE_PICTURE_PATH_LEN))
 
     # Relationships
     chats = db.relationship('Chat', secondary=user_chat_association, back_populates='users')

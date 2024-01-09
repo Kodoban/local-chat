@@ -2,8 +2,10 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import select
+from os import path
+from shutil import copyfile
 
-from . import db
+from . import db, PROFILE_PIC_DIR, DEFAULT_PROFILE_PIC
 from .models import User
 
 auth = Blueprint('auth', __name__)
@@ -57,6 +59,17 @@ def sign_up():
             new_user = User(name=username, password=generate_password_hash(password, method='pbkdf2:sha256'))
             db.session.add(new_user)
             db.session.commit()
+
+            # Add default profile picture to user
+            default_profile_pic_extension = path.splitext(DEFAULT_PROFILE_PIC)[1]
+            new_user_profile_pic_name = f"{new_user.id}{default_profile_pic_extension}"
+            copyfile(
+                path.join(PROFILE_PIC_DIR, DEFAULT_PROFILE_PIC), 
+                path.join(PROFILE_PIC_DIR, new_user_profile_pic_name)
+            )
+            new_user.profile_picture = new_user_profile_pic_name
+            db.session.commit()
+
             login_user(new_user, remember=True)
             flash("Account created", category="success")
             return redirect(url_for('views.home'))

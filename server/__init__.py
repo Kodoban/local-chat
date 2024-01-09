@@ -8,10 +8,16 @@ from datetime import datetime
 
 db = SQLAlchemy()
 DB_NAME = "database.db"
-CLIENT_DIR_PATH = path.join(path.dirname(path.abspath(__file__)), '..', 'client')
-TEMPLATES_DIR_PATH = path.join(CLIENT_DIR_PATH, "templates")
-STATIC_DIR_PATH = path.join(CLIENT_DIR_PATH, 'static')
-app = Flask(__name__, template_folder=TEMPLATES_DIR_PATH, static_folder=STATIC_DIR_PATH)
+CLIENT_DIR = path.join(path.dirname(path.abspath(__file__)), '..', 'client')
+TEMPLATES_DIR = path.join(CLIENT_DIR, "templates")
+STATIC_DIR = path.join(CLIENT_DIR, 'static')
+
+SERVER_DIR = path.dirname(path.abspath(__file__))
+PROFILE_PIC_DIR = path.join(SERVER_DIR, "profile_pics")
+# This assumes there exists a default profile picture for new users, and is placed in PROFILE_PIC_DIR
+DEFAULT_PROFILE_PIC = "default.png"
+
+app = Flask(__name__, template_folder=TEMPLATES_DIR, static_folder=STATIC_DIR)
 app.config['SECRET_KEY'] = "change_later"
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
 socketio = SocketIO(app)
