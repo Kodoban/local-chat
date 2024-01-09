@@ -25,9 +25,16 @@
                                     {{message.content}}
                                 </span>
                             </div>
+                            <div class="profile-picture-container">
+                                <img class="own profile-picture" src="{{ url_for('views.profile_picture', filename=message.sender.profile_picture) }}" alt="Profile Picture">
+                            </div>
                         </div>
                     {% else %}
                         <div class="message-item">
+                            <div class="profile-picture-container">
+                                <!-- Same as chat.js, change to different class for each user (e.g. {user.id} profile-picture) -->
+                                <img class="other profile-picture" src="{{ url_for('views.profile_picture', filename=message.sender.profile_picture) }}" alt="Profile Picture">
+                            </div>
                             <div class="message-container">
                                 <span class="metadata-send-time">
                                     {{message.timestamp}}
