@@ -161,3 +161,4 @@ cython_debug/
 
 # Custom
 server/profile_pics
+.stfolder/
