@@ -1,12 +1,15 @@
-from flask import Blueprint, render_template, request, flash, jsonify, redirect, url_for, session
+from flask import Blueprint, render_template, request, flash, jsonify, redirect, url_for, session, send_from_directory, jsonify
 from flask_login import login_required, current_user
 from sqlalchemy import select
 from flask_socketio import join_room, leave_room, emit
+from werkzeug.utils import secure_filename
 from datetime import datetime
 from .models import User, Chat, Message
-from . import db, socketio
+from . import db, socketio, PROFILE_PIC_DIR, DEFAULT_PROFILE_PIC
 import json
 from sys import version_info as python_version
+import os
+import re
 
 views = Blueprint('views', __name__)
 chatrooms = {}
@@ -21,6 +24,40 @@ def home():
 
     return render_template("home.html", user=current_user)
 
+#Implemented
+@views.route('/profile-picture/<filename>')
+def profile_picture(filename):
+    return send_from_directory(PROFILE_PIC_DIR, filename)
+
+# Implemented
+@views.route('/update-profile-picture', methods=['POST'])
+def update_profile_picture():
+    if request.method == 'POST':
+
+        new_profile_pic = request.files["new_profile_pic"]
+        extension = request.form.get("extension")
+
+        if new_profile_pic:
+
+            # Remove any files with the specific basename in the destination folder
+            # If user with id 4 has a profile picture named 4.png and they change it to a .jpg image, the images would exist at the same time in the server
+            # To avoid this, images that match the pattern "4.*" are located and deleted before the received image is renamed and moved 
+            pattern = r'' + str(current_user.id) + r'.*'
+            matching_files = [os.path.join(PROFILE_PIC_DIR, file) for file in os.listdir(PROFILE_PIC_DIR) if re.match(pattern, file)]
+
+            for file in matching_files:
+                os.remove(file)
+
+            # Form the new name of the new profile picture and save it
+            save_name = f"{current_user.id}{extension}"
+            profile_pic_path = os.path.join(PROFILE_PIC_DIR, save_name)
+            new_profile_pic.save(profile_pic_path)
+
+            current_user.profile_picture = save_name
+            db.session.commit()
+
+            return jsonify({})
+
 # Partially implemented
 @views.route('/profile', methods=['GET'])
 def profile():
@@ -33,7 +70,7 @@ def profile():
             if other_user:
                 return render_template("profile.html", user=current_user, other_user=other_user)
             else:
-                # Change to 404
+                # TODO: Change to 404
                 return render_template("profile.html", user=current_user)
         
         return render_template("profile.html", user=current_user)

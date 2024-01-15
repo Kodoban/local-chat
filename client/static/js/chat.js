@@ -9,7 +9,8 @@ var socketio = io();
 document.addEventListener("DOMContentLoaded", function(event) {
     let dates = document.getElementsByClassName("metadata-send-time");
     for (let sendTime of dates) {
-        sendTime.innerHTML = (new Date(sendTime.innerText)).toLocaleString();
+        // TODO: Find out why this works for converting send time to locale time (and why the old version printed everything in UTC)
+        sendTime.innerHTML = (new Date(Date(sendTime.innerText))).toLocaleString();
     }
 });
 
@@ -22,6 +23,29 @@ function createMessage(name, msg, sendTime) {
     let messageItem = Object.assign(document.createElement("div"), {
         className: "message-item"
     });
+
+    let profilePictureContainer = Object.assign(document.createElement("div"), {
+        className: "profile-picture-container"
+    });
+
+    let profilePicture = Object.assign(document.createElement("img"), {
+        className: "profile-picture",
+        alt: "Profile Picture"
+    });
+    
+    if (name==="") {
+        profilePicture.classList.toggle("own");
+        let image = document.querySelector(".own").src;
+        profilePicture.src = image;
+    }
+    else {
+        profilePicture.classList.toggle("other");
+        let image = document.querySelector(".other").src; //Has to be more distinctive for group chat, e.g. "{id} profile-picture", TODO
+        profilePicture.src = image;
+    }
+
+    profilePictureContainer.appendChild(profilePicture);
+
 
     let messageContainer = Object.assign(document.createElement("div"), {
         className: "message-container"
@@ -45,7 +69,16 @@ function createMessage(name, msg, sendTime) {
     
     messageContainer.appendChild(messageSendTime);
     messageContainer.appendChild(messageContent);
-    messageItem.appendChild(messageContainer);
+
+    if (name === "") {
+        messageItem.appendChild(messageContainer);
+        messageItem.appendChild(profilePictureContainer);
+    } 
+    else {
+        messageItem.appendChild(profilePictureContainer);
+        messageItem.appendChild(messageContainer);
+    }
+    
     messages.insertBefore(messageItem, anchor);
 
     if (name != "" && !userViewingNewestMessage()) {
