@@ -68,7 +68,15 @@ def profile():
             other_user = db.session.scalar(select(User).where(User.id==user_id))
 
             if other_user:
-                return render_template("profile.html", user=current_user, other_user=other_user)
+                # chat_redirect_message = "" 
+                is_contact_class = ""
+                if any(other_user in chat.users for chat in current_user.chats):
+                    chat_redirect_message = "Go to chat"
+                    is_contact_class = "is-contact"
+                else:
+                    chat_redirect_message = "Start a chat"                
+
+                return render_template("profile.html", user=current_user, other_user=other_user, chat_redirect_message=chat_redirect_message, is_contact=is_contact_class)
             else:
                 # TODO: Change to 404
                 return render_template("profile.html", user=current_user)
@@ -166,6 +174,17 @@ def search_user():
             return jsonify(data)
 
     return render_template("search_user.html", user=current_user)
+
+@views.route('/get-user-info', methods=['GET'])
+@login_required
+def get_user_info():
+    if request.method == 'GET':
+        user_id = request.args.get("id")
+        user = db.session.scalar(select(User).where(User.id==user_id))
+        data = {'id': user.id, 'name': user.name}
+
+        return jsonify(data)
+
 
 # Implemented
 @socketio.on('message')
