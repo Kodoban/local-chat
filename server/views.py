@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, flash, jsonify, redirect, url_for, session, send_from_directory, jsonify
 from flask_login import login_required, current_user
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from flask_socketio import join_room, leave_room, emit
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -184,6 +184,27 @@ def get_user_info():
         data = {'id': user.id, 'name': user.name}
 
         return jsonify(data)
+
+@views.route('/get-existing-personal-chat', methods=['GET'])
+@login_required
+def get_existing_personal_chat():
+    if request.method == 'GET':
+        other_user_id = request.args.get("contactId")
+        user_id = current_user.id
+        chats = db.session.execute(  select(Chat.id)
+                                    .where(
+                                        and_(Chat.users.any(User.id==user_id), Chat.users.any(User.id==other_user_id))
+                                    )
+                                ).all()
+
+
+        if len(chats) == 1:
+            response = jsonify({'redirect': url_for('views.chat', chat_id = chats[0].id)})
+            response.status_code = 200
+            return response
+        else:
+            print("More than 1 rooms found, please fix in new DB")
+            return jsonify({})
 
 
 # Implemented

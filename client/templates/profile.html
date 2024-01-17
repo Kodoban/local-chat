@@ -11,7 +11,7 @@
 {% block content %}
 
     {% if other_user %}
-    <h4 align="center">{{other_user.name}}</h4>
+    <h4 class="blurrable" align="center">{{other_user.name}}</h4>
 
     <div class="blurrable d-flex">
         <section class="d-flex" id="profilePictureSection">
@@ -30,7 +30,7 @@
     </div>
     
     {% else %}
-    <h4 align="center">Your Profile Info</h4>
+    <h4 class="blurrable" align="center">Your Profile Info</h4>
 
     <div class="d-flex">
         <section class="d-flex" id="profilePictureSection">

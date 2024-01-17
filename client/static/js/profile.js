@@ -43,7 +43,22 @@ function redirectToChat() {
     let chatRedirectButton = document.getElementById("chatRedirect");
 
     if (chatRedirectButton.classList.contains("is-contact")) {
-        // Redirect to existing chat
+        $.ajax({
+            type: "GET",
+            url: "/get-existing-personal-chat",
+            data: {"contactId" : otherUserId},
+            
+            success: function(response) {
+
+                if (response.redirect) {
+                    window.location.href = response.redirect;
+                }
+            },
+
+            error: function(error) {
+                console.log(error);
+            }
+        })
     } 
     else {
         
@@ -55,19 +70,19 @@ function redirectToChat() {
         document.body.appendChild(popupDiv);
 
         $.ajax({
-        type: "GET",
-        url: "/get-user-info",
-        data: {"id" : otherUserId},
-        
-        success: function(response) {
+            type: "GET",
+            url: "/get-user-info",
+            data: {"id" : otherUserId},
+            
+            success: function(response) {
 
-            let returnedUser = response;
-            raiseConfirmChatPopup(returnedUser);
-        },
-        error: function(error) {
-            console.log(error);
-        }
-    })
+                let returnedUser = response;
+                raiseConfirmChatPopup(returnedUser);
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        })
     }
 }
 
