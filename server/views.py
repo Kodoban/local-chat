@@ -162,18 +162,28 @@ def search_user():
         else:
             # TODO: Check if there's a way to sort by best matching string
             matching_users = db.session.execute(select(User.id, User.name)
-                                                .where(User.name.like(f"%{username}%"))
+                                                .where( and_(User.name.like(f"%{username}%"), User.id != current_user.id))
                                                 .order_by(User.id)
                                                 ).all()
-
-            # TODO: Add "start chat" button text to JSON response and parse inside JS script                       
-            data = [ {'id': user.id, 'name': user.name} if user.id != current_user.id \
-                else {'id': user.id, 'name': user.name, 'disable_click': ""} \
+                   
+            data = [ {  'id': str(user.id), 
+                        'name': user.name, 
+                        'profile_page': url_for('views.profile', id=user.id), 
+                        'existing_chat': _chat_exists_with_user(user.id)}
                 for user in matching_users]
 
             return jsonify(data)
 
     return render_template("search_user.html", user=current_user)
+
+def _chat_exists_with_user(other_user_id):
+    chat_id = db.session.execute(  select(Chat.id)
+                                    .where(
+                                        and_(Chat.users.any(User.id==current_user.id), Chat.users.any(User.id==other_user_id))
+                                    )
+                                ).scalar_one_or_none()
+
+    return url_for('views.chat', chat_id=chat_id) if chat_id else str(chat_id)
 
 @views.route('/get-user-info', methods=['GET'])
 @login_required
