@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, flash, jsonify, redirect, url_for, session, send_from_directory, jsonify
 from flask_login import login_required, current_user
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from flask_socketio import join_room, leave_room, emit
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -68,7 +68,15 @@ def profile():
             other_user = db.session.scalar(select(User).where(User.id==user_id))
 
             if other_user:
-                return render_template("profile.html", user=current_user, other_user=other_user)
+                # chat_redirect_message = "" 
+                is_contact_class = ""
+                if any(other_user in chat.users for chat in current_user.chats):
+                    chat_redirect_message = "Go to chat"
+                    is_contact_class = "is-contact"
+                else:
+                    chat_redirect_message = "Start a chat"                
+
+                return render_template("profile.html", user=current_user, other_user=other_user, chat_redirect_message=chat_redirect_message, is_contact=is_contact_class)
             else:
                 # TODO: Change to 404
                 return render_template("profile.html", user=current_user)
@@ -166,6 +174,38 @@ def search_user():
             return jsonify(data)
 
     return render_template("search_user.html", user=current_user)
+
+@views.route('/get-user-info', methods=['GET'])
+@login_required
+def get_user_info():
+    if request.method == 'GET':
+        user_id = request.args.get("id")
+        user = db.session.scalar(select(User).where(User.id==user_id))
+        data = {'id': user.id, 'name': user.name}
+
+        return jsonify(data)
+
+@views.route('/get-existing-personal-chat', methods=['GET'])
+@login_required
+def get_existing_personal_chat():
+    if request.method == 'GET':
+        other_user_id = request.args.get("contactId")
+        user_id = current_user.id
+        chats = db.session.execute(  select(Chat.id)
+                                    .where(
+                                        and_(Chat.users.any(User.id==user_id), Chat.users.any(User.id==other_user_id))
+                                    )
+                                ).all()
+
+
+        if len(chats) == 1:
+            response = jsonify({'redirect': url_for('views.chat', chat_id = chats[0].id)})
+            response.status_code = 200
+            return response
+        else:
+            print("More than 1 rooms found, please fix in new DB")
+            return jsonify({})
+
 
 # Implemented
 @socketio.on('message')

@@ -11,33 +11,45 @@
 {% block content %}
 
     {% if other_user %}
-    <h4 align="center">Profile Info for {{other_user.name}}</h4>
+    <h4 class="blurrable" align="center">{{other_user.name}}</h4>
 
-    <div>
-        <div class="profile-picture-container">
-            <img id="profilePic" src="{{ url_for('views.profile_picture', filename=other_user.profile_picture) }}" alt="Profile Picture">
-        </div>
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item"><strong>Name: </strong>{{other_user.name}}</li>
-            <li class="list-group-item"><strong>ID: </strong>{{other_user.id}}</li>
-        </ul>
+    <div class="blurrable d-flex">
+        <section class="d-flex" id="profilePictureSection">
+            <div class="profile-picture-container">
+                <img id="profilePic" src="{{ url_for('views.profile_picture', filename=other_user.profile_picture) }}" alt="Profile Picture">
+            </div>
+        </section>
+        
+        <section class="d-flex" id="userInfo">
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>Name: </strong>{{other_user.name}}</li>
+                <li class="list-group-item"><strong>ID: </strong>{{other_user.id}}</li>
+            </ul>
+            <button class="btn btn-primary {{is_contact}}" id="chatRedirect" onclick="redirectToChat()">{{chat_redirect_message}}</button>  
+        </section>
     </div>
     
     {% else %}
-    <h4 align="center"> Your Profile Info</h4>
+    <h4 class="blurrable" align="center">Your Profile Info</h4>
 
-    <div>
-        <div class="profile-picture-container">
-            <img id="profilePic" src="{{ url_for('views.profile_picture', filename=current_user.profile_picture) }}" alt="Profile Picture">
-        </div>
-        <form class="mb-3" method="post" enctype="multipart/form-data">
-            <label for="picInput" class="btn btn-primary form-label" id="fileInputButton">Change profile picture</label>
-            <input class="form-control" type="file" id="picInput" name="pic-input" accept="image/*" data-type="image" onchange="updateProfilePicture(this)" style="display: none;"> 
-        </form>
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item"><strong>Name: </strong>{{user.name}}</li>
-            <li class="list-group-item"><strong>ID: </strong>{{user.id}}</li>
-        </ul>
+    <div class="d-flex">
+        <section class="d-flex" id="profilePictureSection">
+            <div class="profile-picture-container">
+                <img id="profilePic" src="{{ url_for('views.profile_picture', filename=current_user.profile_picture) }}" alt="Profile Picture">
+            </div>
+            <form class="mb-3" method="post" enctype="multipart/form-data">
+                <label for="picInput" class="btn btn-primary form-label" id="fileInputButton">Change profile picture</label>
+                <input class="form-control" type="file" id="picInput" name="pic-input" accept="image/*" data-type="image" onchange="updateProfilePicture(this)" style="display: none;"> 
+            </form>
+        </section>
+        
+        <section class="d-flex" id="userInfo">
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>Name: </strong>{{user.name}}</li>
+                <li class="list-group-item"><strong>ID: </strong>{{user.id}}</li>
+            </ul>
+        </section>
+        
     </div>
     {% endif %}
 {% endblock %}
