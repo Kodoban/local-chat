@@ -45,7 +45,7 @@ function findUsers() {
 
                                 // Add hyperlink to user profile
                                 let userProfileHyperlink = Object.assign(document.createElement('a'), {
-                                    href: "/profile?id=" + user.id,
+                                    href: `${user.profile_page}`,
                                     innerHTML: `${user.name}`
                                 });
 
@@ -53,25 +53,29 @@ function findUsers() {
                                 userProfileArea.appendChild(userProfileHyperlink);
                                 userProfileArea.innerHTML += ` (ID: ${user.id})`;
 
-                                // Add start chat button
-                                let addChatButton;
+                                // Add chat redirect button
+                                let chatRedirectButton;
 
-                                // Check if user returned is the logged-in user
-                                // If so, disable the start chat button
-                                if ('disable_click' in user) {
-                                    addChatButton = Object.assign(document.createElement('button'), {
-                                        className: "btn btn-secondary disabled",
-                                        innerText: "Start chat"
-                                    });
-                                }
-                                else {
-                                    addChatButton = Object.assign(document.createElement('button'), {
+                                // Check if a (2-person) chat exists containing with the returned user and the logged-in user
+                                // The backend returns "None" if no chats exist, the chat URL if one exists, and raises a backend error if multiple exist
+                                if (user.existing_chat === "None") {
+                                    chatRedirectButton = Object.assign(document.createElement('button'), {
                                         className: "btn btn-primary",
                                         innerText: "Start chat"
                                     });
 
-                                    addChatButton.addEventListener('click', function() {
+                                    chatRedirectButton.addEventListener('click', function() {
                                         raiseConfirmChatPopup(user);
+                                    });
+                                }
+                                else {
+                                    chatRedirectButton = Object.assign(document.createElement('button'), {
+                                        className: "btn btn-primary",
+                                        innerText: "Go to chat",
+                                    });
+
+                                    chatRedirectButton.addEventListener('click', function() {
+                                        location.href = `${user.existing_chat}`
                                     });
                                 }
 
@@ -81,7 +85,7 @@ function findUsers() {
                                 });
 
                                 listItem.appendChild(userProfileArea);
-                                listItem.appendChild(addChatButton);
+                                listItem.appendChild(chatRedirectButton);
 
                                 foundUsers.appendChild(listItem);
                             })
