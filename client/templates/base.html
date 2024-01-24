@@ -25,10 +25,25 @@
             <div class="collapse navbar-collapse" id="navbar">
                 <div class="navbar-nav">
                     {% if user.is_authenticated %}
+                    <!-- Check which ones to keep -->
                     <a class="nav-item nav-link" id="home" href="{{ url_for ('views.home') }}">Home</a>
-                    <a class="nav-item nav-link" id="profileInfo" href="{{ url_for('views.profile') }}">Profile</a>
                     <a class="nav-item nav-link" id="searchUser" href="{{ url_for('views.search_user') }}">Find users</a>
-                    <a class="nav-item nav-link" id="logout" href="{{ url_for('auth.logout') }}">Logout</a>
+
+                        <div class="dropdown">
+                            <a class="navbar-brand nav-item" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img class="own" src="{{ url_for('views.profile_picture', filename=user.profile_picture) }}" alt="Image" width="30" height="30" class="d-inline-block align-top">
+                            </a>
+
+                            <!-- Move to right end of navbar -->
+                            <ul class="dropdown-menu">
+                                <!-- Make username a "header" in bold from dropdown -->
+                                <li class="dropdown-item">{{user.name}}</li>
+                                <li><a class="dropdown-item" id="profileInfo" href="{{ url_for('views.profile') }}">Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" id="logout" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                            </ul>
+                        </div>
+                    </nav>
                     {% else %}
                     <a class="nav-item nav-link" id="login" href="{{ url_for('auth.login') }}">Login</a> 
                     <a class="nav-item nav-link" id="signUp" href="{{ url_for('auth.sign_up') }}">Sign Up</a>
