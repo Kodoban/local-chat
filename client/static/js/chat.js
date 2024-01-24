@@ -14,8 +14,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
     }
 });
 
-socketio.on('message', function(data) {
-    createMessage(data.name, data.content, new Date(data.send_time));
+socketio.on('message', function(message) {
+    createMessage(message.name, message.content, new Date(message.send_time));
+});
+
+socketio.on('notification', function(messagePreview) {
+    // TODO: Does not work if a new chat is started by another user while the logged in user is in the chat page
+    let chatPreview = document.querySelector(`.list-group-item#id${messagePreview.chat_id} .latest-message`);
+    chatPreview.innerHTML = `${messagePreview.name}: ${messagePreview.content}`;
 });
 
 function createMessage(name, msg, sendTime) {
@@ -64,7 +70,8 @@ function createMessage(name, msg, sendTime) {
         messageContent.innerHTML = msg;
     } 
     else {
-        messageContent.innerHTML = `<strong>${name}: </strong>${msg}`;
+        // TODO: Add name to different place in message (e.g. on top)
+        messageContent.innerHTML = `<strong>${name}: </strong>${msg}`; 
     }
     
     messageContainer.appendChild(messageSendTime);
@@ -85,6 +92,17 @@ function createMessage(name, msg, sendTime) {
         addNewMessageRibbon();
         toggleNewMessageRibbon();
     }
+
+    // Show new message in chat preview in the sidebar
+    // TODO: Would this work if a user was had 2 or more tabs of the chat page active but was on different chats?
+    let chatPreview = document.querySelector(`.list-group-item#id${new URL(location.href).pathname.split('/').pop()} .latest-message`);
+    if (name === "") {
+        chatPreview.innerHTML = `<i>You:</i> ${msg}`;
+    }
+    else {
+        chatPreview.innerHTML = `${name}: ${msg}`;
+    }
+    
 }
 
 function sendMessage() {

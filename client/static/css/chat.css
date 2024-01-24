@@ -2,9 +2,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 10px;
 }
 
-.messages {
+.messages, .chats {
     overflow-y: scroll;
     flex: 1;
     width: 100%;
@@ -15,7 +16,37 @@
     display: flex;
 }
 
+#allChats {
+    flex: 2;
+    border: green;
+}
+
+.chat-list-entry {
+    border-radius: 10px;
+    border-width: 2px;
+    background-color: gray;
+}
+
+.chat-info {
+    /*  Find way to cover only 3/10 of the window regardless of window size */
+    width: 200px;
+    margin-left: 8px;
+}
+
+.chat-preview-clickable {
+    text-decoration: none;
+    align-items: center;
+}
+
+.latest-message {
+    white-space: nowrap;
+    min-width: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
 .conversation-box {
+    flex: 8;
     border-color: black;
     border-width: 2px;
     border-style: solid;

@@ -13,6 +13,7 @@ import re
 
 views = Blueprint('views', __name__)
 chatrooms = {}
+users_online = {}
 
 # Partially implemented
 # Page after login, shows all available chats (if any), page to add chats, etc
@@ -24,7 +25,7 @@ def home():
 
     return render_template("home.html", user=current_user)
 
-#Implemented
+# Implemented
 @views.route('/profile-picture/<filename>')
 def profile_picture(filename):
     return send_from_directory(PROFILE_PIC_DIR, filename)
@@ -133,16 +134,17 @@ def add_participants(chat_id):
 
 
 # Currently implementing
-@views.route('/chats/<int:chat_id>', methods=['GET'])
+@views.route('/chats/<int:id>', methods=['GET'])
 @login_required
-def chat(chat_id):
+def chat(id):
     if request.method == 'GET':
         # TODO: Check if there is an easier way to get the chat object (e.g. pass from another view)
-        chat = db.session.scalar(select(Chat).where(Chat.id==chat_id))
+        chat = db.session.scalar(select(Chat).where(Chat.id==id))
         
         # TODO: Check how to handle a user being in the same room on multiple tabs (utilize instance count?)
-        if chat.id not in chatrooms:
-            chatrooms[chat.id] = {"online_users": []}
+        chatrooms.setdefault(chat.id, {})
+        # if chat.id not in chatrooms:
+        #     chatrooms[chat.id] = {}
 
         session["chat"] = chat.id
 
@@ -207,7 +209,6 @@ def get_existing_personal_chat():
                                     )
                                 ).all()
 
-
         if len(chats) == 1:
             response = jsonify({'redirect': url_for('views.chat', chat_id = chats[0].id)})
             response.status_code = 200
@@ -215,6 +216,7 @@ def get_existing_personal_chat():
         else:
             print("More than 1 rooms found, please fix in new DB")
             return jsonify({})
+
 
 
 # Implemented
@@ -237,6 +239,22 @@ def message(data):
     # Send message to everyone in the chat (the sender has it printed locally at the same time )
     # TODO: Check if it's better to verify that the message was inserted to the DB successfully first?
     emit('message', message, to=chat, include_self=False)
+
+
+    # Send notification to all members of the chat who are online but are reading the chat at the moment
+    # TODO: Find more efficient query
+    all_chat_members_id = [user.id for user in ((db.session.scalar(select(Chat).where(Chat.id==chat))).users)]
+    online_non_active_members = [user_sid for user_id, user_sid in users_online.items() \
+                                    if user_id not in chatrooms[chat] \
+                                    and user_id in all_chat_members_id \
+                                    and user_id != current_user.id]
+
+    message_preview = {
+        "chat_id": chat,
+        "name": sender,
+        "content": content,
+    }
+    emit('notification', message_preview, to=online_non_active_members, include_self=False)
     
     # Commit message to chat
 
@@ -254,10 +272,12 @@ def message(data):
 
     print(f"Chat {chat} - {sender} said: {content} ({sendTime})")
 
-# Implemented
+# Mostly implemented
+# TODO: Fix bug where server restarts when users are in a chat (the chat does not register properly, maybe do a check after a message is sent?)
 @socketio.on("connect")
 def connect(auth):
     
+    users_online.update({current_user.id : request.sid})
     chatroom = session.get("chat")
 
     if not chatroom:
@@ -267,7 +287,7 @@ def connect(auth):
         return
 
     join_room(chatroom)
-    chatrooms[chatroom]["online_users"].append(current_user)
+    chatrooms[chatroom].setdefault(current_user.id, request.sid)
     print(f"{current_user.name} has connected to chatroom with ID {chatroom}")
 
 
@@ -275,13 +295,14 @@ def connect(auth):
 @socketio.on("disconnect")
 def disconnect():
 
+    users_online.pop(current_user.id)
     chatroom = session.get("chat")
 
     leave_room(chatroom)
 
     if chatroom in chatrooms:
-        chatrooms[chatroom]["online_users"].remove(current_user)
-        if len(chatrooms[chatroom]["online_users"]) <= 0:
+        chatrooms[chatroom].pop(current_user.id)
+        if len(chatrooms[chatroom]) <= 0:
             print(f"Chatroom with ID {chatroom} has no active users at the moment, deleting from memory (will still exist in DB, will be re-enter the memory once a user becomes active on it)")
             del chatrooms[chatroom]
 

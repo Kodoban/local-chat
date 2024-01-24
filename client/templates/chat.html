@@ -10,15 +10,53 @@
 {% block content %}
 
     <div class="page-content">
-        <div class="conversation-box" id="conversationBox">
+        <div id="allChats">
+            <ul class="chats">
+                {% for chat in user.chats %}
+                <li class="list-group-item" id="id{{chat.id}}">
+                    <div class="chat-list-entry d-flex mb-3">
+                        <a class="link-primary d-flex chat-preview-clickable" href="{{ url_for('views.chat', id=chat.id) }}">
+                            <div class="chat-pic profile-picture-container">
+                                <!-- TODO: Add check for when group chats are implemented  -->
+                                <!-- TODO: Set other user profile picture column for Chat model, use that instead -->
+                                <img class="profile-picture" src="{{ url_for('views.profile_picture', filename=(chat.messages|last).sender.profile_picture) }}" alt="Profile Picture">
+                            </div>
+                            <div class="chat-info d-flex flex-column">
+                                <!-- TODO: Add check for when group chats are implemented  -->
 
-            
+                                <div class="chat-name">
+                                    <!-- TODO: Find better way to achieve this with built-in filters -->
+                                    {% for chat_user in chat.users %}
+                                        {% if chat_user != user %}
+                                            {{chat_user.name}}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+
+                                <div class="latest-message">
+                                    {% if (chat.messages|last).sender == user %}
+                                        <i>You:</i> {{(chat.messages|last).content}}
+                                    {% else %}
+                                        {{(chat.messages|last).sender.name}}: {{(chat.messages|last).content}}
+                                    {% endif %}
+                                    
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="conversation-box" id="conversationBox">
             <div class="messages" id="messages">
                 {% for message in chat.messages %}
                     {% if message.sender.id == user.id %}
                         <div class="message-item own-message">
                             <div class="message-container">
                                 <span class="metadata-send-time own-message-text-align">
+                                    <!-- Time bug still exists -->
                                     {{message.timestamp | convert_date_to_ISO8601}}
                                 </span>
                                 <span class="own-message-text-align">
